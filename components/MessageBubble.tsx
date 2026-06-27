@@ -53,16 +53,18 @@ export default function MessageBubble({ message, isStreaming }: Props) {
             <div className={`prose-agent ${isStreaming ? 'typing-cursor' : ''}`}>
               <ReactMarkdown
                 components={{
-                  // @ts-expect-error - react-markdown type issue
-                  code({ node, inline, className, children, ...props }) {
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  code({ className, children, ...props }: any) {
                     const match = /language-(\w+)/.exec(className || '');
                     const codeStr = String(children).replace(/\n$/, '');
-                    if (!inline && match) {
+                    const isBlock = !!match;
+                    if (isBlock) {
                       return (
                         <div className="relative">
                           <CopyButton text={codeStr} />
                           <SyntaxHighlighter
-                            style={oneDark}
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                            style={oneDark as any}
                             language={match[1]}
                             PreTag="div"
                             customStyle={{
@@ -72,14 +74,17 @@ export default function MessageBubble({ message, isStreaming }: Props) {
                               fontSize: '0.8rem',
                               marginTop: '0.5rem',
                             }}
-                            {...props}
                           >
                             {codeStr}
                           </SyntaxHighlighter>
                         </div>
                       );
                     }
-                    return <code className={className} {...props}>{children}</code>;
+                    return (
+                      <code className={className} {...props}>
+                        {children}
+                      </code>
+                    );
                   },
                 }}
               >
@@ -99,5 +104,3 @@ export default function MessageBubble({ message, isStreaming }: Props) {
         )}
       </div>
     </div>
-  );
-}
